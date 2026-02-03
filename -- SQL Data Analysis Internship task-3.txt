@@ -1,0 +1,61 @@
+-- SQL Data Analysis Internship
+-- TASK 3 : Complex Queries (JOIN, GROUP BY, SUBQUERY, HAVING)
+-- Name: Divyashree
+
+-- =========================
+-- USE DATABASE
+-- =========================
+USE StudentManagement_Divyashree;
+
+-- =========================
+-- *TASK 3 QUERIES*
+-- =========================
+
+-- 1. Find top student per course
+SELECT
+    c.CourseName,
+    s.Name AS StudentName,
+    e.Grade
+FROM Enrollments e
+JOIN Students s ON e.StudentID = s.StudentID
+JOIN Courses c ON e.CourseID = c.CourseID
+WHERE e.Grade = (
+    SELECT MAX(e2.Grade)
+    FROM Enrollments e2
+    WHERE e2.CourseID = e.CourseID
+);
+
+-- =========================
+
+-- 2. Find pass rate per course (Grade >= 40)
+SELECT
+    c.CourseName,
+    COUNT(CASE WHEN e.Grade >= 40 THEN 1 END) AS PassedStudents,
+    COUNT(*) AS TotalStudents,
+    (COUNT(CASE WHEN e.Grade >= 40 THEN 1 END) * 100.0 / COUNT(*)) AS PassPercentage
+FROM Enrollments e
+JOIN Courses c ON e.CourseID = c.CourseID
+GROUP BY c.CourseName;
+
+-- =========================
+
+-- 3. Find overall topper across all courses
+SELECT
+    s.Name AS StudentName,
+    AVG(e.Grade) AS AverageGrade
+FROM Enrollments e
+JOIN Students s ON e.StudentID = s.StudentID
+GROUP BY s.Name
+ORDER BY AverageGrade DESC
+LIMIT 1;
+
+-- =========================
+
+-- 4. Find students enrolled in multiple courses
+SELECT
+    s.Name AS StudentName,
+    COUNT(e.CourseID) AS TotalCourses
+FROM Enrollments e
+JOIN Students s ON e.StudentID = s.StudentID
+GROUP BY s.Name
+HAVING COUNT(e.CourseID) > 1;
